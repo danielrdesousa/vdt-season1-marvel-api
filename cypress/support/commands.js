@@ -25,24 +25,33 @@
 // Cypress.Commands.overwrite('visit', (originalFn, url, options) => { ... })
 
 
+import './../e2e/characters/commands';
+
+const user = require('../fixtures/user.json');
+
 Cypress.Commands.add('setToken', function() {
     cy.api({
         method: 'POST',
         url: '/sessions',
         body: {
-            email: 'example@provider.com',
-            password: 'qa-cademy'
+            email: user.email,
+            password: user.password
         }
     }).then(function(response) {
         expect(response.status).to.eql(200);
+
+        // save token and userId
         Cypress.env('APP_TOKEN', response.body.token);
+        Cypress.env('APP_USER_ID', response.body.user._id);
     });
 });
 
 Cypress.Commands.add('resetDB', function() {
+    const userId = Cypress.env('APP_USER_ID');
+
     cy.api({
         method: 'DELETE',
-        url: '/back2thepast/USER_ID'
+        url: `/back2thepast/${userId}`
     }).then(function(response) {
         expect(response.status).to.eql(200);
         cy.log('Database cleaned');
